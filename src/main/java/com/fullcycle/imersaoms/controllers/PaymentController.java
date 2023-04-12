@@ -3,20 +3,20 @@ package com.fullcycle.imersaoms.controllers;
 import com.fullcycle.imersaoms.models.NewPaymentInput;
 import com.fullcycle.imersaoms.models.Payment;
 import com.fullcycle.imersaoms.publisher.PaymentPublisher;
+import com.fullcycle.imersaoms.repositories.InMemoryDataBase;
 import com.fullcycle.imersaoms.repositories.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
-import java.awt.*;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "payments")
@@ -71,5 +71,20 @@ public class PaymentController {
                         Retry.backoff(2,Duration.ofSeconds(1))
                                 .doAfterRetry(signal -> log.info("Execution failed"))
                 );
+    }
+
+    @GetMapping(value = "users")
+    public Flux<Payment> findAllById(@RequestParam String ids){
+        final List<String> _ids =  Arrays.asList(ids.split(","));
+        log.info("Collecting {} payments", _ids.size());
+                return Flux.fromIterable(_ids)
+                .flatMap(id -> this.paymentRepository.getPayment(id));
+    }
+
+    @GetMapping(value = "ids")
+    public Mono<String> getIds(){
+        return Mono.fromCallable(() -> {
+            return String.join(",",InMemoryDataBase.DATABASE.keySet());
+        }).subscribeOn(Schedulers.parallel());
     }
 }

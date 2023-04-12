@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @RequiredArgsConstructor
 public class InMemoryDataBase implements Database{
-    private static final Map<String, String> DATABASE =
+    public static final Map<String, String> DATABASE =
             new ConcurrentHashMap<>();
 
 
@@ -33,7 +33,7 @@ public class InMemoryDataBase implements Database{
     @Override
     public <T> Optional<T> get(final String key, final Class<T> clazz) {
         final String json = DATABASE.get(key);
-        sleep(100);
+        sleep(15);
         return Optional.ofNullable(json)
                 .map(data -> {
             try {

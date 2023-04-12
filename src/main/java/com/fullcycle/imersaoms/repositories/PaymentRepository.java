@@ -3,18 +3,32 @@ package com.fullcycle.imersaoms.repositories;
 import com.fullcycle.imersaoms.models.Payment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentRepository {
+
+
+
+    //Podemos substituir pelo nosso scheduler, onde esta chamando
+    //.subscribeOn(Schedulers.boundedElastic()), no projeto
+    private static final ThreadFactory THREAD_FACTORY = new CustomizableThreadFactory("database-");
+
+    private  static final Scheduler DB_SCHEDULER = Schedulers.fromExecutor(Executors.newFixedThreadPool(8,THREAD_FACTORY));
+
 
     private final Database database;
 

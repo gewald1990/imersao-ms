@@ -9,6 +9,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Sinks;
 
+import java.time.Duration;
+
 @RequiredArgsConstructor
 @Component
 @Slf4j
@@ -25,7 +27,9 @@ public class PaymentListener implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.sink.asFlux().subscribe(
+        this.sink.asFlux()
+                .delayElements(Duration.ofSeconds(2))
+                .subscribe(
                 next -> {
                     log.info("On next message - {}", next.getKey());
                     this.paymentRepository.processPayment(next.getKey(), Payment.PaymentStatus.APPROVED)
